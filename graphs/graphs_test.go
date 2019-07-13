@@ -107,29 +107,51 @@ func TestNew(t *testing.T) {
 func TestNode_Colour(t *testing.T) {
 	type fields struct {
 		id     uint64
-		colour colour
+		colour Colour
 		edges  []*Node
 	}
-	type args struct {
-		c colour
-	}
-	tests := []struct {
-		name    string
-		fields  fields
-		args    args
+	tests := map[string]struct {
+		node    *Node
+		colour  Colour
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		"colour from white to grey": {
+			node: &Node{
+				id:     42,
+				colour: white,
+				edges:  nil,
+			},
+			colour: grey,
+			wantErr: true,
+		},
+		"colour from grey to black": {
+			node: &Node{
+				id:     42,
+				colour: grey,
+				edges:  nil,
+			},
+			colour: black,
+		},
+		"do nothing when colouring from black": {
+			node: &Node{
+				id:     42,
+				colour: black,
+				edges:  nil,
+			},
+			colour: black,
+		},
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
+	for name, tt := range tests {
+		t.Run(name, func(t *testing.T) {
 			n := &Node{
-				id:     tt.fields.id,
-				colour: tt.fields.colour,
-				edges:  tt.fields.edges,
+				id:     tt.node.id,
+				colour: tt.node.colour,
+				edges:  tt.node.edges,
 			}
-			if err := n.Colour(tt.args.c); (err != nil) != tt.wantErr {
-				t.Errorf("Node.Colour() error = %v, wantErr %v", err, tt.wantErr)
+			n.Colour()
+			diff := cmp.Diff(tt.colour, n.colour, cmp.AllowUnexported(Graph{}, Node{}))
+			if diff != "" {
+				t.Errorf(diff)
 			}
 		})
 	}

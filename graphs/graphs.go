@@ -9,12 +9,13 @@ import (
 )
 
 const (
-	white colour = iota
+	white Colour = iota
 	grey
 	black
 )
 
-type colour uint8
+// Colour represents the exploration status of a node.
+type Colour uint8
 
 // Graph represents an undirected graph.
 type Graph struct {
@@ -24,12 +25,12 @@ type Graph struct {
 // Node represents a node of a graph.
 type Node struct {
 	id     uint64
-	colour colour
+	colour Colour
 	edges  []*Node
 }
 
 // New returns a Graph instance, populated according to the input string.
-// The each input line represents an edge where U and V are nodes of the graph:
+// Each input line represents an edge where U and V are Nodes of the graph:
 // `U [V]`
 // As an example, the following lines represent the graph found at https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/6n-graf.svg/220px-6n-graf.svg.png . Notice the newline at the last line.
 // ```
@@ -89,4 +90,11 @@ func readNodes(r io.Reader) (map[uint64]*Node, error) {
 		}
 	}
 	return nodes, nil
+}
+
+// Colour a Node with either grey or black. Cannot transition back to an earlier colour.
+func (n *Node) Colour() {
+	if n.colour != black {
+		n.colour++
+	}
 }

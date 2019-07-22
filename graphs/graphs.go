@@ -98,3 +98,16 @@ func (n *Node) Colour() {
 		n.colour++
 	}
 }
+
+// Visit a Node identified by its id. It returns the list of Nodes connected to it and returns an error if the Node does not exist.
+func (g *Graph) Visit(id uint64) ([]uint64, error) {
+	if g.nodes[id] == nil {
+		return nil, errors.New("node does not exist")
+	}
+
+	ret := []uint64{}
+	for _, e := range g.nodes[id].edges {
+		ret = append(ret, e.id)
+	}
+	return ret, nil
+}

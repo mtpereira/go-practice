@@ -1,11 +1,11 @@
 package graphs
 
 import (
+	"bufio"
 	"errors"
 	"io"
 	"strconv"
 	"strings"
-	"unicode"
 )
 
 const (
@@ -52,41 +52,28 @@ func New(input string) (*Graph, error) {
 }
 
 func readNodes(r io.Reader) (map[uint64]*Node, error) {
-	input := make([]byte, 8)
-	for {
-		_, err := r.Read(input)
-		if err == io.EOF {
-			break
-		}
-	}
-
+	scanner := bufio.NewScanner(r)
+	scanner.Split(bufio.ScanLines)
 	nodes := make(map[uint64]*Node)
 	var current *Node
-	for _, c := range string(input) {
-		switch {
-		case unicode.IsDigit(c):
-			id, err := strconv.ParseUint(string(c), 10, 64)
-			if err != nil {
-				return nil, err
-			}
 
-			if current == nil {
-				current = &Node{id: id}
-			} else {
-				previous := current
-				current = &Node{id: id}
-				previous.edges = append(previous.edges, current)
-			}
-
-			nodes[id] = current
-		// Space character except newline or EOF -> ignore.
-		case unicode.IsSpace(c) && c != '\n' || c == 0:
-			continue
-		// Newline -> create a new node on next iteration.
-		case c == '\n':
-			current = nil
-		default:
+	for scanner.Scan() {
+		ids := strings.Fields(scanner.Text())
+		nodeID, err := strconv.ParseUint(ids[0], 10, 64)
+		if err != nil {
 			return nil, errors.New("non-digit id on node")
+		}
+		current = &Node{id: nodeID}
+		nodes[nodeID] = current
+
+		if len(ids) == 2 {
+			edgeID, err := strconv.ParseUint(ids[1], 10, 64)
+			if err != nil {
+				return nil, errors.New("non-digit id on node")
+			}
+			edge := &Node{id: edgeID}
+			current.edges = append(current.edges, edge)
+			nodes[edgeID] = edge
 		}
 	}
 	return nodes, nil

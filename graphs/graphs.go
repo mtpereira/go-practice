@@ -82,13 +82,6 @@ func readNodes(r io.Reader) (map[NodeID]*Node, error) {
 	return nodes, nil
 }
 
-// Colour a Node with either grey or black. Cannot transition back to an earlier colour.
-func (n *Node) Colour() {
-	if n.colour != black {
-		n.colour++
-	}
-}
-
 // Visit a Node identified by its id. It returns the list of Nodes connected to it and returns an error if the Node does not exist.
 func (g *Graph) Visit(id NodeID) ([]NodeID, error) {
 	n := g.nodes[id]
@@ -102,3 +95,27 @@ func (g *Graph) Visit(id NodeID) ([]NodeID, error) {
 	}
 	return ret, nil
 }
+
+// Node returns a Node identified by its id. Returns `nil` if the Node does not exist.
+func (g *Graph) Node(id NodeID) *Node {
+	return g.nodes[NodeID(id)]
+}
+
+// Len returns the number of Nodes in the Graph.
+func (g *Graph) Len() int { return len(g.nodes) }
+
+// Colour returns the Node's colour.
+func (n *Node) Colour() Colour { return n.colour }
+
+// IncrementColour sets the Colour of the Node one further closer to black. If it is black already, it does nothing.
+func (n *Node) IncrementColour() {
+	if n.colour != black {
+		n.colour++
+	}
+}
+
+// ID returns the Node's id.
+func (n *Node) ID() NodeID { return n.id }
+
+// Edges returns the Node's edges.
+func (n *Node) Edges() []*Node { return n.edges }

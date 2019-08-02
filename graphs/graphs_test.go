@@ -14,7 +14,7 @@ func TestNew(t *testing.T) {
 	}{
 		"empty": {
 			input: "",
-			want:  &Graph{nodes: map[uint64]*Node{}},
+			want:  &Graph{nodes: map[NodeID]*Node{}},
 		},
 		"non-digit id on node": {
 			input:   "a 1\n",
@@ -23,8 +23,8 @@ func TestNew(t *testing.T) {
 		"one node, no edges": {
 			input: "1\n",
 			want: &Graph{
-				map[uint64]*Node{
-					uint64(1): &Node{
+				map[NodeID]*Node{
+					NodeID(1): &Node{
 						id:     1,
 						colour: white,
 						edges:  nil,
@@ -35,8 +35,8 @@ func TestNew(t *testing.T) {
 		"two nodes, one edge": {
 			input: "1 2\n",
 			want: &Graph{
-				map[uint64]*Node{
-					uint64(1): &Node{
+				map[NodeID]*Node{
+					NodeID(1): &Node{
 						id:     1,
 						colour: white,
 						edges: []*Node{
@@ -47,7 +47,7 @@ func TestNew(t *testing.T) {
 							},
 						},
 					},
-					uint64(2): &Node{
+					NodeID(2): &Node{
 						id:     2,
 						colour: white,
 						edges:  nil,
@@ -58,8 +58,8 @@ func TestNew(t *testing.T) {
 		"three nodes, two edges": {
 			input: "1 2\n2 3\n",
 			want: &Graph{
-				map[uint64]*Node{
-					uint64(1): &Node{
+				map[NodeID]*Node{
+					NodeID(1): &Node{
 						id:     1,
 						colour: white,
 						edges: []*Node{
@@ -70,7 +70,7 @@ func TestNew(t *testing.T) {
 							},
 						},
 					},
-					uint64(2): &Node{
+					NodeID(2): &Node{
 						id:     2,
 						colour: white,
 						edges: []*Node{
@@ -81,7 +81,7 @@ func TestNew(t *testing.T) {
 							},
 						},
 					},
-					uint64(3): &Node{
+					NodeID(3): &Node{
 						id:     3,
 						colour: white,
 						edges:  nil,
@@ -158,14 +158,14 @@ func TestNode_Colour(t *testing.T) {
 func TestGraph_Visit(t *testing.T) {
 	tests := map[string]struct {
 		graph   *Graph
-		input   uint64
-		want    []uint64
+		input   NodeID
+		want    []NodeID
 		wantErr bool
 	}{
 		"1 node, visit node 2": {
 			graph: &Graph{
-				nodes: map[uint64]*Node{
-					uint64(1): &Node{
+				nodes: map[NodeID]*Node{
+					NodeID(1): &Node{
 						id:     1,
 						colour: white,
 						edges:  nil,
@@ -177,8 +177,8 @@ func TestGraph_Visit(t *testing.T) {
 		},
 		"1 node, visit node 1": {
 			graph: &Graph{
-				nodes: map[uint64]*Node{
-					uint64(1): &Node{
+				nodes: map[NodeID]*Node{
+					NodeID(1): &Node{
 						id:     1,
 						colour: white,
 						edges:  nil,
@@ -186,12 +186,12 @@ func TestGraph_Visit(t *testing.T) {
 				},
 			},
 			input: 1,
-			want:  []uint64{},
+			want:  []NodeID{},
 		},
 		"2 nodes, visit node 1": {
 			graph: &Graph{
-				map[uint64]*Node{
-					uint64(1): &Node{
+				map[NodeID]*Node{
+					NodeID(1): &Node{
 						id:     1,
 						colour: white,
 						edges: []*Node{
@@ -202,7 +202,7 @@ func TestGraph_Visit(t *testing.T) {
 							},
 						},
 					},
-					uint64(2): &Node{
+					NodeID(2): &Node{
 						id:     2,
 						colour: white,
 						edges:  nil,
@@ -210,12 +210,12 @@ func TestGraph_Visit(t *testing.T) {
 				},
 			},
 			input: 1,
-			want:  []uint64{2},
+			want:  []NodeID{2},
 		},
 		"3 nodes, visit node 1": {
 			graph: &Graph{
-				map[uint64]*Node{
-					uint64(1): &Node{
+				map[NodeID]*Node{
+					NodeID(1): &Node{
 						id:     1,
 						colour: white,
 						edges: []*Node{
@@ -231,12 +231,12 @@ func TestGraph_Visit(t *testing.T) {
 							},
 						},
 					},
-					uint64(2): &Node{
+					NodeID(2): &Node{
 						id:     2,
 						colour: white,
 						edges:  nil,
 					},
-					uint64(3): &Node{
+					NodeID(3): &Node{
 						id:     3,
 						colour: white,
 						edges:  nil,
@@ -244,7 +244,7 @@ func TestGraph_Visit(t *testing.T) {
 				},
 			},
 			input: 1,
-			want:  []uint64{2, 3},
+			want:  []NodeID{2, 3},
 		},
 	}
 	for name, tt := range tests {

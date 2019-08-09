@@ -6,6 +6,54 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+var (
+	node42 = &node{
+		id:     42,
+		colour: White,
+		edges:  nil,
+	}
+	node42_grey = &node{
+		id:     42,
+		colour: Grey,
+		edges:  nil,
+	}
+	node42_black = &node{
+		id:     42,
+		colour: Grey,
+		edges:  nil,
+	}
+	node1 = &node{
+		id:     1,
+		colour: White,
+		edges:  nil,
+	}
+	node2 = &node{
+		id:     2,
+		colour: White,
+		edges:  nil,
+	}
+	node3 = &node{
+		id:     3,
+		colour: White,
+		edges:  nil,
+	}
+	node1_2 = &node{
+		id:     1,
+		colour: White,
+		edges:  []NodeID{node2.id},
+	}
+	node2_3 = &node{
+		id:     2,
+		colour: White,
+		edges:  []NodeID{node3.id},
+	}
+	node1_2_3 = &node{
+		id:     1,
+		colour: White,
+		edges:  []NodeID{node2.id, node3.id},
+	}
+)
+
 func TestNew(t *testing.T) {
 	tests := map[string]struct {
 		input   string
@@ -14,7 +62,7 @@ func TestNew(t *testing.T) {
 	}{
 		"empty": {
 			input: "",
-			want:  &Graph{nodes: map[NodeID]*Node{}},
+			want:  &Graph{nodes: map[NodeID]Node{}},
 		},
 		"non-digit id on node": {
 			input:   "a 1\n",
@@ -27,69 +75,27 @@ func TestNew(t *testing.T) {
 		"one node, no edges": {
 			input: "1\n",
 			want: &Graph{
-				map[NodeID]*Node{
-					NodeID(1): &Node{
-						id:     1,
-						colour: white,
-						edges:  nil,
-					},
+				map[NodeID]Node{
+					NodeID(1): node1,
 				},
 			},
 		},
 		"two nodes, one edge": {
 			input: "1 2\n",
 			want: &Graph{
-				map[NodeID]*Node{
-					NodeID(1): &Node{
-						id:     1,
-						colour: white,
-						edges: []*Node{
-							&Node{
-								id:     2,
-								colour: white,
-								edges:  nil,
-							},
-						},
-					},
-					NodeID(2): &Node{
-						id:     2,
-						colour: white,
-						edges:  nil,
-					},
+				map[NodeID]Node{
+					NodeID(1): node1_2,
+					NodeID(2): node2,
 				},
 			},
 		},
 		"three nodes, two edges": {
 			input: "1 2\n2 3\n",
 			want: &Graph{
-				map[NodeID]*Node{
-					NodeID(1): &Node{
-						id:     1,
-						colour: white,
-						edges: []*Node{
-							&Node{
-								id:     2,
-								colour: white,
-								edges:  nil,
-							},
-						},
-					},
-					NodeID(2): &Node{
-						id:     2,
-						colour: white,
-						edges: []*Node{
-							&Node{
-								id:     3,
-								colour: white,
-								edges:  nil,
-							},
-						},
-					},
-					NodeID(3): &Node{
-						id:     3,
-						colour: white,
-						edges:  nil,
-					},
+				map[NodeID]Node{
+					NodeID(1): node1_2,
+					NodeID(2): node2_3,
+					NodeID(3): node3,
 				},
 			},
 		},
@@ -100,7 +106,7 @@ func TestNew(t *testing.T) {
 			if (err != nil) != tt.wantErr {
 				t.Errorf("expected error, got none")
 			}
-			diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(Graph{}, Node{}))
+			diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(Graph{}, node{}))
 			if diff != "" {
 				t.Errorf(diff)
 			}
@@ -115,43 +121,31 @@ func TestNode_IncrementColour(t *testing.T) {
 		edges  []*Node
 	}
 	tests := map[string]struct {
-		node   *Node
+		node   *node
 		colour Colour
 	}{
 		"colour from white to grey": {
-			node: &Node{
-				id:     42,
-				colour: white,
-				edges:  nil,
-			},
-			colour: grey,
+			node:   node42,
+			colour: Grey,
 		},
 		"colour from grey to black": {
-			node: &Node{
-				id:     42,
-				colour: grey,
-				edges:  nil,
-			},
-			colour: black,
+			node:   node42_grey,
+			colour: Black,
 		},
 		"do nothing when colouring from black": {
-			node: &Node{
-				id:     42,
-				colour: black,
-				edges:  nil,
-			},
-			colour: black,
+			node:   node42_black,
+			colour: Black,
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			n := &Node{
+			n := &node{
 				id:     tt.node.id,
 				colour: tt.node.colour,
 				edges:  tt.node.edges,
 			}
 			n.IncrementColour()
-			diff := cmp.Diff(tt.colour, n.colour, cmp.AllowUnexported(Graph{}, Node{}))
+			diff := cmp.Diff(tt.colour, n.colour, cmp.AllowUnexported(Graph{}, node{}))
 			if diff != "" {
 				t.Errorf(diff)
 			}
@@ -168,12 +162,8 @@ func TestGraph_Visit(t *testing.T) {
 	}{
 		"1 node, visit node 2": {
 			graph: &Graph{
-				nodes: map[NodeID]*Node{
-					NodeID(1): &Node{
-						id:     1,
-						colour: white,
-						edges:  nil,
-					},
+				nodes: map[NodeID]Node{
+					NodeID(1): node1,
 				},
 			},
 			input:   42,
@@ -181,12 +171,8 @@ func TestGraph_Visit(t *testing.T) {
 		},
 		"1 node, visit node 1": {
 			graph: &Graph{
-				nodes: map[NodeID]*Node{
-					NodeID(1): &Node{
-						id:     1,
-						colour: white,
-						edges:  nil,
-					},
+				nodes: map[NodeID]Node{
+					NodeID(1): node1,
 				},
 			},
 			input: 1,
@@ -194,23 +180,9 @@ func TestGraph_Visit(t *testing.T) {
 		},
 		"2 nodes, visit node 1": {
 			graph: &Graph{
-				map[NodeID]*Node{
-					NodeID(1): &Node{
-						id:     1,
-						colour: white,
-						edges: []*Node{
-							&Node{
-								id:     2,
-								colour: white,
-								edges:  nil,
-							},
-						},
-					},
-					NodeID(2): &Node{
-						id:     2,
-						colour: white,
-						edges:  nil,
-					},
+				map[NodeID]Node{
+					NodeID(1): node1_2,
+					NodeID(2): node2,
 				},
 			},
 			input: 1,
@@ -218,33 +190,10 @@ func TestGraph_Visit(t *testing.T) {
 		},
 		"3 nodes, visit node 1": {
 			graph: &Graph{
-				map[NodeID]*Node{
-					NodeID(1): &Node{
-						id:     1,
-						colour: white,
-						edges: []*Node{
-							&Node{
-								id:     2,
-								colour: white,
-								edges:  nil,
-							},
-							&Node{
-								id:     3,
-								colour: white,
-								edges:  nil,
-							},
-						},
-					},
-					NodeID(2): &Node{
-						id:     2,
-						colour: white,
-						edges:  nil,
-					},
-					NodeID(3): &Node{
-						id:     3,
-						colour: white,
-						edges:  nil,
-					},
+				map[NodeID]Node{
+					NodeID(1): node1_2_3,
+					NodeID(2): node2,
+					NodeID(3): node3,
 				},
 			},
 			input: 1,
@@ -266,29 +215,14 @@ func TestGraph_Visit(t *testing.T) {
 }
 
 func TestGraph_Node(t *testing.T) {
-	node1 := &Node{
-		id:     1,
-		colour: white,
-		edges:  nil,
-	}
-	node2 := &Node{
-		id:     2,
-		colour: white,
-		edges:  nil,
-	}
-	node3 := &Node{
-		id:     1,
-		colour: white,
-		edges:  []*Node{node1, node2},
-	}
 	tests := map[string]struct {
 		graph *Graph
 		input NodeID
-		want  *Node
+		want  Node
 	}{
 		"get node 42, return nil": {
 			graph: &Graph{
-				nodes: map[NodeID]*Node{
+				nodes: map[NodeID]Node{
 					NodeID(1): node1,
 				},
 			},
@@ -297,7 +231,7 @@ func TestGraph_Node(t *testing.T) {
 		},
 		"get node 1": {
 			graph: &Graph{
-				nodes: map[NodeID]*Node{
+				nodes: map[NodeID]Node{
 					NodeID(1): node1,
 				},
 			},
@@ -306,7 +240,7 @@ func TestGraph_Node(t *testing.T) {
 		},
 		"get node 2": {
 			graph: &Graph{
-				map[NodeID]*Node{
+				map[NodeID]Node{
 					NodeID(1): node1,
 					NodeID(2): node2,
 				},
@@ -316,7 +250,7 @@ func TestGraph_Node(t *testing.T) {
 		},
 		"get node 3": {
 			graph: &Graph{
-				map[NodeID]*Node{
+				map[NodeID]Node{
 					NodeID(1): node1,
 					NodeID(2): node2,
 					NodeID(3): node3,
@@ -329,7 +263,7 @@ func TestGraph_Node(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			got := tt.graph.Node(tt.input)
-			diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(Graph{}, Node{}))
+			diff := cmp.Diff(tt.want, got, cmp.AllowUnexported(Graph{}, node{}))
 			if diff != "" {
 				t.Errorf(diff)
 			}
@@ -338,23 +272,13 @@ func TestGraph_Node(t *testing.T) {
 }
 
 func TestGraph_Len(t *testing.T) {
-	node1 := &Node{
-		id:     1,
-		colour: white,
-		edges:  nil,
-	}
-	node2 := &Node{
-		id:     2,
-		colour: white,
-		edges:  nil,
-	}
 	tests := map[string]struct {
 		graph *Graph
 		want  int
 	}{
 		"get length of a 1 node graph": {
 			graph: &Graph{
-				nodes: map[NodeID]*Node{
+				nodes: map[NodeID]Node{
 					NodeID(1): node1,
 				},
 			},
@@ -362,7 +286,7 @@ func TestGraph_Len(t *testing.T) {
 		},
 		"get length of a 2 node graph": {
 			graph: &Graph{
-				map[NodeID]*Node{
+				map[NodeID]Node{
 					NodeID(1): node1,
 					NodeID(2): node2,
 				},
@@ -391,27 +315,23 @@ func TestNode_Colour(t *testing.T) {
 		edges  []*Node
 	}
 	tests := map[string]struct {
-		node   *Node
+		node   *node
 		colour Colour
 	}{
 		"get colour from a node": {
-			node: &Node{
-				id:     42,
-				colour: white,
-				edges:  nil,
-			},
-			colour: white,
+			node:   node42,
+			colour: White,
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			n := &Node{
+			n := &node{
 				id:     tt.node.id,
 				colour: tt.node.colour,
 				edges:  tt.node.edges,
 			}
 			n.Colour()
-			diff := cmp.Diff(tt.colour, n.colour, cmp.AllowUnexported(Graph{}, Node{}))
+			diff := cmp.Diff(tt.colour, n.colour, cmp.AllowUnexported(Graph{}, node{}))
 			if diff != "" {
 				t.Errorf(diff)
 			}
@@ -426,36 +346,21 @@ func TestNode_ID(t *testing.T) {
 		edges  []*Node
 	}
 	tests := map[string]struct {
-		node  *Node
-		edges []*Node
+		node  *node
+		edges []*node
 	}{
 		"get ID from a Node": {
-			node: &Node{
-				id:     1,
-				colour: white,
-				edges: []*Node{
-					&Node{
-						id:     2,
-						colour: white,
-						edges:  nil,
-					},
-					&Node{
-						id:     3,
-						colour: white,
-						edges:  nil,
-					},
-				},
-			},
+			node: node1_2_3,
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			n := &Node{
+			n := &node{
 				id:     tt.node.id,
 				colour: tt.node.colour,
 				edges:  tt.node.edges,
 			}
-			diff := cmp.Diff(tt.node.id, n.ID(), cmp.AllowUnexported(Graph{}, Node{}))
+			diff := cmp.Diff(tt.node.id, n.ID(), cmp.AllowUnexported(Graph{}, node{}))
 			if diff != "" {
 				t.Errorf(diff)
 			}
@@ -467,40 +372,25 @@ func TestNode_Edges(t *testing.T) {
 	type fields struct {
 		id     NodeID
 		colour Colour
-		edges  []*Node
+		edges  []*node
 	}
 	tests := map[string]struct {
-		node  *Node
-		edges []*Node
+		node  *node
+		edges []*node
 	}{
 		"get the edges of a Node": {
-			node: &Node{
-				id:     1,
-				colour: white,
-				edges: []*Node{
-					&Node{
-						id:     2,
-						colour: white,
-						edges:  nil,
-					},
-					&Node{
-						id:     3,
-						colour: white,
-						edges:  nil,
-					},
-				},
-			},
+			node: node1_2_3,
 		},
 	}
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
-			n := &Node{
+			n := &node{
 				id:     tt.node.id,
 				colour: tt.node.colour,
 				edges:  tt.node.edges,
 			}
 			n.Edges()
-			diff := cmp.Diff(tt.node.edges, n.Edges(), cmp.AllowUnexported(Graph{}, Node{}))
+			diff := cmp.Diff(tt.node.edges, n.Edges(), cmp.AllowUnexported(Graph{}, node{}))
 			if diff != "" {
 				t.Errorf(diff)
 			}

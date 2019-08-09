@@ -8,28 +8,17 @@ import (
 	"strings"
 )
 
-const (
-	white Colour = iota
-	grey
-	black
-)
-
-// Colour represents the exploration status of a node.
-type Colour uint8
-
-// NodeID represents the ID of a Node.
-type NodeID uint64
+type Node interface {
+	ID() NodeID
+	Edges() []NodeID
+	Colour() Colour
+	IncrementColour()
+	AddEdge(NodeID)
+}
 
 // Graph represents an undirected graph.
 type Graph struct {
-	nodes map[NodeID]*Node
-}
-
-// Node represents a node of a graph.
-type Node struct {
-	id     NodeID
-	colour Colour
-	edges  []*Node
+	nodes map[NodeID]Node
 }
 
 // New returns a Graph instance, populated according to the input string.
@@ -54,11 +43,11 @@ func New(input string) (*Graph, error) {
 	return &Graph{nodes: nodes}, nil
 }
 
-func readNodes(r io.Reader) (map[NodeID]*Node, error) {
+func readNodes(r io.Reader) (map[NodeID]Node, error) {
 	scanner := bufio.NewScanner(r)
 	scanner.Split(bufio.ScanLines)
-	nodes := make(map[NodeID]*Node)
-	var current *Node
+	nodes := make(map[NodeID]Node)
+	var current Node
 
 	for scanner.Scan() {
 		ids := strings.Fields(scanner.Text())
@@ -66,7 +55,7 @@ func readNodes(r io.Reader) (map[NodeID]*Node, error) {
 		if err != nil {
 			return nil, errors.New("non-digit id on node")
 		}
-		current = &Node{id: NodeID(id)}
+		current = NewNode(NodeID(id))
 		nodes[NodeID(id)] = current
 
 		if len(ids) == 2 {
@@ -74,9 +63,9 @@ func readNodes(r io.Reader) (map[NodeID]*Node, error) {
 			if err != nil {
 				return nil, errors.New("non-digit id on node")
 			}
-			edge := &Node{id: NodeID(e)}
-			current.edges = append(current.edges, edge)
-			nodes[NodeID(e)] = edge
+			edge := NewNode(NodeID(e))
+			current.AddEdge(edge.ID())
+			nodes[NodeID(e)] = Node(edge)
 		}
 	}
 	return nodes, nil
@@ -90,32 +79,16 @@ func (g *Graph) Visit(id NodeID) ([]NodeID, error) {
 	}
 
 	ret := []NodeID{}
-	for _, e := range n.edges {
-		ret = append(ret, e.id)
+	for _, e := range n.Edges() {
+		ret = append(ret, e)
 	}
 	return ret, nil
 }
 
 // Node returns a Node identified by its id. Returns `nil` if the Node does not exist.
-func (g *Graph) Node(id NodeID) *Node {
+func (g *Graph) Node(id NodeID) Node {
 	return g.nodes[NodeID(id)]
 }
 
 // Len returns the number of Nodes in the Graph.
 func (g *Graph) Len() int { return len(g.nodes) }
-
-// Colour returns the Node's colour.
-func (n *Node) Colour() Colour { return n.colour }
-
-// IncrementColour sets the Colour of the Node one further closer to black. If it is black already, it does nothing.
-func (n *Node) IncrementColour() {
-	if n.colour != black {
-		n.colour++
-	}
-}
-
-// ID returns the Node's id.
-func (n *Node) ID() NodeID { return n.id }
-
-// Edges returns the Node's edges.
-func (n *Node) Edges() []*Node { return n.edges }

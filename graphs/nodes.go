@@ -10,34 +10,26 @@ const (
 	Black
 )
 
-// NodeID represents the ID of a Node.
-type NodeID uint64
-
 // Node represents a node of a graph.
-type node struct {
-	id     NodeID
+type Node struct {
+	id     uint64
 	colour Colour
-	edges  []NodeID
+	edges  []uint64
 }
 
 // NewNode returns a pointer to a new Node with the given ID.
-func NewNode(id NodeID) *node { return &node{id: id} }
+func NewNode(id uint64) *Node { return &Node{id: id} }
 
 // Colour returns the Node's colour.
-func (n *node) Colour() Colour { return n.colour }
+func (n *Node) Colour() Colour { return n.colour }
 
 // IncrementColour sets the Colour of the Node one further closer to black. If it is black already, it does nothing.
-func (n *node) IncrementColour() {
+func (n *Node) IncrementColour() {
 	if n.colour != Black {
 		n.colour++
 	}
 }
 
-// ID returns the Node's id.
-func (n *node) ID() NodeID { return n.id }
-
-// Edges returns the Node's edges.
-func (n *node) Edges() []NodeID { return n.edges }
-
 // AddEdge appends a Node to the list of Edges.
-func (n *node) AddEdge(id NodeID) { n.edges = append(n.edges, id) }
+func (n *Node) AddEdge(id uint64) { n.edges = append(n.edges, id) }
+

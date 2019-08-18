@@ -56,7 +56,7 @@ func readNodes(r io.Reader) (map[uint64]*Node, error) {
 				return nil, errors.New("non-digit id on node")
 			}
 			edge := NewNode(e)
-			current.AddEdge(edge.id)
+			current.AddEdge(edge.Id)
 			nodes[e] = edge
 		}
 	}
@@ -71,7 +71,7 @@ func (g *Graph) Visit(id uint64) ([]uint64, error) {
 	}
 
 	ret := []uint64{}
-	ret = append(ret, n.edges...)
+	ret = append(ret, n.Edges...)
 	return ret, nil
 }
 

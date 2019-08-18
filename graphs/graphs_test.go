@@ -8,49 +8,49 @@ import (
 
 var (
 	node42 = &Node{
-		id:     42,
-		colour: White,
-		edges:  nil,
+		Id:     42,
+		Colour: White,
+		Edges:  nil,
 	}
 	node42Grey = &Node{
-		id:     42,
-		colour: Grey,
-		edges:  nil,
+		Id:     42,
+		Colour: Grey,
+		Edges:  nil,
 	}
 	node42Black = &Node{
-		id:     42,
-		colour: Grey,
-		edges:  nil,
+		Id:     42,
+		Colour: Grey,
+		Edges:  nil,
 	}
 	node1 = &Node{
-		id:     1,
-		colour: White,
-		edges:  nil,
+		Id:     1,
+		Colour: White,
+		Edges:  nil,
 	}
 	node2 = &Node{
-		id:     2,
-		colour: White,
-		edges:  nil,
+		Id:     2,
+		Colour: White,
+		Edges:  nil,
 	}
 	node3 = &Node{
-		id:     3,
-		colour: White,
-		edges:  nil,
+		Id:     3,
+		Colour: White,
+		Edges:  nil,
 	}
 	node1_2 = &Node{
-		id:     1,
-		colour: White,
-		edges:  []uint64{node2.id},
+		Id:     1,
+		Colour: White,
+		Edges:  []uint64{node2.Id},
 	}
 	node2_3 = &Node{
-		id:     2,
-		colour: White,
-		edges:  []uint64{node3.id},
+		Id:     2,
+		Colour: White,
+		Edges:  []uint64{node3.Id},
 	}
 	node1_2_3 = &Node{
-		id:     1,
-		colour: White,
-		edges:  []uint64{node2.id, node3.id},
+		Id:     1,
+		Colour: White,
+		Edges:  []uint64{node2.Id, node3.Id},
 	}
 )
 
@@ -135,12 +135,12 @@ func TestNode_IncrementColour(t *testing.T) {
 	for name, tt := range tests {
 		t.Run(name, func(t *testing.T) {
 			n := &Node{
-				id:     tt.node.id,
-				colour: tt.node.colour,
-				edges:  tt.node.edges,
+				Id:     tt.node.Id,
+				Colour: tt.node.Colour,
+				Edges:  tt.node.Edges,
 			}
 			n.IncrementColour()
-			diff := cmp.Diff(tt.colour, n.colour, cmp.AllowUnexported(Graph{}, Node{}))
+			diff := cmp.Diff(tt.colour, n.Colour, cmp.AllowUnexported(Graph{}, Node{}))
 			if diff != "" {
 				t.Errorf(diff)
 			}

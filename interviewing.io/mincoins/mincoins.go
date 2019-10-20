@@ -1,10 +1,24 @@
 package mincoins
 
-func mincoins(cents int) int {
+import "sort"
+
+func mincoins(cents int, coins []int) int {
 	if cents < 1 {
 		return 0
 	}
-	return mincoinsAux(cents, 0, []int{25, 10, 5, 1})
+
+	// guarantee coins are in desceinding order
+	sort.Sort(sort.Reverse(sort.IntSlice(coins)))
+
+	// calculate min number of coins with all sets of coins that result from removing the largest coin, one by one
+	var results []int
+	for i := 0; i < len(coins); i++ {
+		results = append(results, mincoinsAux(cents, 0, coins[i:]))
+	}
+
+	// return the smallest result
+	sort.Sort(sort.IntSlice(results))
+	return results[0]
 }
 
 func mincoinsAux(cents int, count int, coins []int) int {

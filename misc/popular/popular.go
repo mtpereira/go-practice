@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 )
 
@@ -14,10 +15,10 @@ type post struct {
 	Body   string `json:"body"`
 }
 
-func popularWord(url string) string {
+func popularWord(url string) (words []string, count int, err error) {
 	r, err := http.Get(url)
 	if err != nil {
-		panic(err)
+		return
 	}
 
 	var data []byte
@@ -26,35 +27,36 @@ func popularWord(url string) string {
 	data, err = ioutil.ReadAll(r.Body)
 	err = json.Unmarshal(data, &posts)
 	if err != nil {
-		panic(err)
+		return
 	}
 
-	wordCount := make(map[string][]int, 1)
+	wordCount := map[string]map[int]int{}
 
 	for _, p := range posts {
 		words := strings.Fields(p.Body)
 		for _, w := range words {
-			userIDs := wordCount[w]
-			present := false
-			for _, u := range userIDs {
-				if p.UserID == u {
-					present = true
-				}
+			if _, ok := wordCount[w]; !ok {
+				wordCount[w] = make(map[int]int)
 			}
-			if present == false {
-				wordCount[w] = append(wordCount[w], p.UserID)
-			}
+			wordCount[w][p.UserID]++
 		}
 	}
 
-	var mostPopular string
+	wordsPerCount := make(map[int][]string)
 	largest := 0
-	for w, u := range wordCount {
-		if len(u) > largest {
-			largest = len(u)
-			mostPopular = w
+	for w, uc := range wordCount {
+		count := 0
+		for _, c := range uc {
+			if c > 0 {
+				count++
+			}
+		}
+		wordsPerCount[count] = append(wordsPerCount[count], w)
+		if count > largest {
+			largest = count
 		}
 	}
 
-	return mostPopular
+	sort.Strings(wordsPerCount[largest])
+	return wordsPerCount[largest], largest, nil
 }
